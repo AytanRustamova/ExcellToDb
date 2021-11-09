@@ -34,26 +34,29 @@ def func():
         return redirect('/')
     return render_template("index.html")
 
+@app.route("/downloadExcel")
+def dbtoExcel():
+        filePath = "ModifiedExcel.xlsx"
+        conn = sqlite3.connect('data.db')
+        writer = pd.ExcelWriter(filePath, engine='xlsxwriter')
 
-filePath = "Info.xlsx"
-conn = sqlite3.connect('data.db')
-writer = pd.ExcelWriter(filePath, engine='xlsxwriter')
+        df= pd.read_sql("SELECT name FROM sqlite_master WHERE type='table'", conn)
 
-df= pd.read_sql("SELECT name FROM sqlite_master WHERE type='table'", conn)
+        print(df['name'])
 
-print(df['name'])
+        for table_name in df['name']:
+            sheet_name = table_name
 
-for table_name in df['name']:
-    sheet_name = table_name
+            SQL = "SELECT * FROM " + sheet_name
 
-    SQL = "select * from " + sheet_name
+            dft = pd.read_sql(SQL, conn)
 
-    dft = pd.read_sql(SQL, conn)
+            print(dft)
 
-    print(dft)
+            dft.to_excel(writer, sheet_name=sheet_name, index=False)
+        writer.save()   
 
-    dft.to_excel(writer, sheet_name=sheet_name, index=False)
-writer.save()   
+    
 
 
 
